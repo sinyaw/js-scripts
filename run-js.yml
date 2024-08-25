@@ -1,12 +1,12 @@
-name: Run JavaScript
+name: Deploy to GitHub Pages
 
 on:
   push:
     branches:
-      - main  # Adjust this if you're using a different branch
+      - main  # Change to your default branch
 
 jobs:
-  run-js:
+  build:
     runs-on: ubuntu-latest
     
     steps:
@@ -16,33 +16,16 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '16'  # Specify the Node.js version you need
+          node-version: '16'  # Use your required version
 
-      - name: Install dependencies
-        run: npm install
-
-      - name: Create a simple Node.js server
+      - name: Replace environment variable in HTML
         run: |
-          echo "const http = require('http');" > server.js
-          echo "const fs = require('fs');" >> server.js
-          echo "const path = require('path');" >> server.js
-          echo "const server = http.createServer((req, res) => {" >> server.js
-          echo "  if (req.url === '/env') {" >> server.js
-          echo "    res.writeHead(200, { 'Content-Type': 'application/json' });" >> server.js
-          echo "    res.end(JSON.stringify({ MY_ENV_VAR: process.env.MY_ENV_VAR }));" >> server.js
-          echo "  } else if (req.url === '/') {" >> server.js
-          echo "    fs.readFile(path.join(__dirname, 'index.html'), (err, content) => {" >> server.js
-          echo "      if (err) {" >> server.js
-          echo "        res.writeHead(500);" >> server.js
-          echo "        res.end('Error loading HTML');" >> server.js
-          echo "      } else {" >> server.js
-          echo "        res.writeHead(200, { 'Content-Type': 'text/html' });" >> server.js
-          echo "        res.end(content);" >> server.js
-          echo "      }" >> server.js
-          echo "    });" >> server.js
-          echo "  }" >> server.js
-          echo "});" >> server.js
-          echo "server.listen(8080, () => console.log('Server running on port 8080'));" >> server.js
+          sed -i "s/DEFAULT_VALUE/$MY_ENV_VAR/" index.html
         env:
           MY_ENV_VAR: "This is a test value"
-        run: node server.js
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: .  # Change to your build output directory if needed
