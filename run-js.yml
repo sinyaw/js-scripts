@@ -1,7 +1,9 @@
+name: Run JavaScript
+
 on:
   push:
     branches:
-      - main  # Change this to the branch you want the action to run on
+      - main  # Adjust this if you're using a different branch
 
 jobs:
   run-js:
@@ -19,8 +21,28 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run JavaScript File
-        run: node your-script.js  # Replace `your-script.js` with your JS file
+      - name: Create a simple Node.js server
+        run: |
+          echo "const http = require('http');" > server.js
+          echo "const fs = require('fs');" >> server.js
+          echo "const path = require('path');" >> server.js
+          echo "const server = http.createServer((req, res) => {" >> server.js
+          echo "  if (req.url === '/env') {" >> server.js
+          echo "    res.writeHead(200, { 'Content-Type': 'application/json' });" >> server.js
+          echo "    res.end(JSON.stringify({ MY_ENV_VAR: process.env.MY_ENV_VAR }));" >> server.js
+          echo "  } else if (req.url === '/') {" >> server.js
+          echo "    fs.readFile(path.join(__dirname, 'index.html'), (err, content) => {" >> server.js
+          echo "      if (err) {" >> server.js
+          echo "        res.writeHead(500);" >> server.js
+          echo "        res.end('Error loading HTML');" >> server.js
+          echo "      } else {" >> server.js
+          echo "        res.writeHead(200, { 'Content-Type': 'text/html' });" >> server.js
+          echo "        res.end(content);" >> server.js
+          echo "      }" >> server.js
+          echo "    });" >> server.js
+          echo "  }" >> server.js
+          echo "});" >> server.js
+          echo "server.listen(8080, () => console.log('Server running on port 8080'));" >> server.js
         env:
-          MY_ENV_VAR: "some-value"
-          MY_SECRET: ${{ secrets.MY_SECRET }}
+          MY_ENV_VAR: "This is a test value"
+        run: node server.js
